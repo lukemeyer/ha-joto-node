@@ -1,0 +1,33 @@
+# Joto
+template:
+  - trigger:
+      - platform: time_pattern
+        minutes: "/5"
+    sensor:
+      - name: Joto
+        state: "{{ now().strftime('%d') }}"
+        attributes:
+          sectionCount: 4
+          section_0_title: "{{ now().strftime('%A') }}"
+          section_0_label: "{{ now().strftime('%B') }}"
+          section_0_value: >
+            {%- set num = now().strftime('%d') | int %}
+            {%- set d = {1:'st',2:'nd',3:'rd'} %}
+            {%- if 10 < num % 100 <= 20 %}
+              {{- num }}th
+            {%- else %}
+              {{- num }}{{ d.get(num % 10, 'th') }}
+            {%- endif %}
+          section_0_type: string
+          section_1_title: DOGE
+          section_1_label: to the moon
+          section_1_value: "${{ states('sensor.dogecoin_price') }}"
+          section_1_type: string-small
+          section_2_title: Weather
+          section_2_label: "{{ states('sensor.owm_forecast_condition') | lower }}"
+          section_2_value: "{{ states('sensor.owm_forecast_temperature') | round }}°"
+          section_2_type: string
+          section_3_title: Sleep
+          section_3_label: last night
+          section_3_value: "{{ state_attr('sensor.sleeping_hours','value') }}"
+          section_3_type: string
