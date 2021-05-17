@@ -8,7 +8,7 @@ template:
         state: "{{ now().strftime('%d') }}"
         attributes:
           sectionCount: 4
-          section_0_title: "{{ now().strftime('%A') }}"
+          section_0_title: "{{ now().strftime('%A') | lower}}"
           section_0_label: "{{ now().strftime('%B') }}"
           section_0_value: >
             {%- set num = now().strftime('%d') | int %}
@@ -19,15 +19,22 @@ template:
               {{- num }}{{ d.get(num % 10, 'th') }}
             {%- endif %}
           section_0_type: string
-          section_1_title: DOGE
-          section_1_label: to the moon
-          section_1_value: "${{ states('sensor.dogecoin_price') }}"
-          section_1_type: string-small
-          section_2_title: Weather
-          section_2_label: "{{ states('sensor.owm_forecast_condition') | lower }}"
-          section_2_value: "{{ states('sensor.owm_forecast_temperature') | round }}°"
-          section_2_type: string
-          section_3_title: Sleep
-          section_3_label: last night
+          section_2_title: DOGE
+          section_2_label: to the moon
+          section_2_value: "${{ states('sensor.dogecoin_price') }}"
+          section_2_type: string-small
+          section_1_title: forecast
+          section_1_label: "{{ states('sensor.owm_forecast_condition') | lower }} - {{ states('sensor.owm_forecast_temperature') | round }}°"
+          section_1_value: >
+            {% set weatherLookup = { 'clear-night':'faMoon', 'cloudy':'faCloud', 'exceptional':'faMeteor', 'fog':'faSmog', 'hail':'faCloudMeatball', 'lightning':'faBolt', 'lightning-rainy':'faBolt', 'partlycloudy':'faCloudSun', 'pouring':'faCloudShowersHeavy', 'rainy':'faCloudRain', 'snowy':'faSnowflake', 'snowy-rainy':'faSnowflake', 'sunny':'faSun', 'windy':'faWind', 'windy-variant':'faWind' } %}
+            {% set condition = states('sensor.owm_forecast_condition') | lower %}
+            {% if condition in weatherLookup -%}
+              {{ weatherLookup[condition] }}
+            {% else -%}
+              faBars
+            {% endif -%}
+          section_1_type: icon
+          section_3_title: sleep
+          section_3_label: since 7pm
           section_3_value: "{{ state_attr('sensor.sleeping_hours','value') }}"
           section_3_type: string

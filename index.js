@@ -3,6 +3,7 @@ const fs = require('fs');
 const https = require('https');
 const JotoSVG = require('joto-svg');
 const JotoAPI = require('joto-api');
+const icons = require('@fortawesome/free-solid-svg-icons');
 
 const fileMode = process.env.FILE_MODE;
 
@@ -49,6 +50,7 @@ const fileMode = process.env.FILE_MODE;
     const padding = 10;
     const valueSize = 50;
     const smallValueSize = 30;
+    const iconSize = 70;
 
     // Starting Coords
     let sectionX = 0;
@@ -87,7 +89,9 @@ const fileMode = process.env.FILE_MODE;
             case 'string-small':
                 joto.addString({ x: sectionX, y: sectionY + (valueYOffset - (smallValueSize / 2)), size: smallValueSize, str: value.toString(), align: 'center' });
                 break;
-        
+            case 'icon':
+              joto.addFAIcon({ x: sectionX - (iconSize / 2), y: sectionY + (valueYOffset - (iconSize / 2)), size: iconSize, icon: icons[value.toString()] });
+              break;
             default:
                 break;
         }
