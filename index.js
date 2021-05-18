@@ -39,47 +39,55 @@ const fileMode = process.env.FILE_MODE;
     // @ts-ignore
     const joto = new JotoSVG();
 
-    // Draw sections
+    // Define drawing space
     const width = 500;
     const height = 500;
     const cols = 2;
     const rows = 2;
 
-    const titleSize = 30;
-    const labelSize = 20;
+    // Size constants
+    const titleSize = 35;
+    const labelSize = 25;
     const padding = 10;
     const valueSize = 50;
     const smallValueSize = 30;
     const iconSize = 70;
 
-    // Starting Coords
-    let sectionX = 0;
-    let sectionY = 0;
+    // Calc positions from coonstants
     const rowHeight = height / rows;
     const colWidth = width / cols;
     const titleYOffset = padding;
     const labelYOffset = (height / rows) - (labelSize + padding);
-    const valueYOffset = ((height / rows) / 2);
+    const valueYOffset = ((height / rows) / 2);    
 
     for (let i = 0; i < sensorData.sectionCount; i++) {
-        const title = sensorData['section_' + i + '_title'].toString();
+      // Extract tile parts  
+      const title = sensorData['section_' + i + '_title'].toString();
         const label = sensorData['section_' + i + '_label'].toString();
         const value = sensorData['section_' + i + '_value'];
         const type = sensorData['section_' + i + '_type'].toString();
 
+        // Find tile coord
         const row = Math.floor(i / cols);
         const col = i % cols;
 
-        sectionY = row * rowHeight;
-        sectionX = (col * colWidth) + (colWidth / 2);
+        // Calc initial positions
+        const sectionY = row * rowHeight;
+        const sectionX = (col * colWidth) + (colWidth / 2);
 
         verboseLog(col + ',' + row + ': ' + title + ' - ' + value.toString() + ' - ' + label);
         
+      // Draw Tile
+
         // Title
-        joto.addString({ x: sectionX, y: sectionY + titleYOffset, size: titleSize, str: title, align: 'center' });
+        if ( title ){
+          joto.addString({ x: sectionX, y: sectionY + titleYOffset, size: titleSize, str: title, align: 'center' });
+        }
 
         // Label
-        joto.addString({ x: sectionX, y: sectionY + labelYOffset, size: labelSize, str: label, align: 'center' });
+        if ( label ){
+          joto.addString({ x: sectionX, y: sectionY + labelYOffset, size: labelSize, str: label, align: 'center' });
+        }
 
         // Value
         switch (type) {
@@ -88,6 +96,25 @@ const fileMode = process.env.FILE_MODE;
                 break;
             case 'string-small':
                 joto.addString({ x: sectionX, y: sectionY + (valueYOffset - (smallValueSize / 2)), size: smallValueSize, str: value.toString(), align: 'center' });
+                break;
+            case 'string-multiline':
+                // Split lines
+                let lines = value.toString().split(/\r?\n/);
+                // Remove empty lines
+                lines = lines.filter((line) => { return line.length });
+                
+                verboseLog(lines);
+
+                // Calc position
+                const lineHeight = smallValueSize * 1.4;
+                const totalHeight = lines.length * lineHeight;
+                const yStart = sectionY + (valueYOffset - (totalHeight / 2));
+                
+                // Draw lines
+                for (let i = 0; i < lines.length; i++) {
+                  joto.addString({ x: sectionX, y: yStart + (lineHeight * i), size: smallValueSize, str: lines[i], align: 'center' });
+                }
+                
                 break;
             case 'icon':
               joto.addFAIcon({ x: sectionX - (iconSize / 2), y: sectionY + (valueYOffset - (iconSize / 2)), size: iconSize, icon: icons[value.toString()] });
@@ -103,7 +130,7 @@ const fileMode = process.env.FILE_MODE;
         joto.addPath({ x: colWidth * i, y: 0, d: 'M0,0L0,500' });
     }
     // Rows
-    for (let i = 1; i < cols; i++) {
+    for (let i = 1; i < rows; i++) {
         joto.addPath({ x: 0, y: rowHeight * i, d: 'M0,0L500,0' });
     }
 

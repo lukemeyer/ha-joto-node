@@ -19,10 +19,17 @@ template:
               {{- num }}{{ d.get(num % 10, 'th') }}
             {%- endif %}
           section_0_type: string
-          section_2_title: DOGE
-          section_2_label: to the moon
-          section_2_value: "${{ states('sensor.dogecoin_price') }}"
-          section_2_type: string-small
+          section_2_title: ""
+          section_2_label: ""
+          section_2_value: >
+            DOGE ${{ states('sensor.dogecoin_price') | round(2)}}
+            
+            
+            ADA  ${{ states('sensor.cardano_price') | round(2)}}
+            
+            
+            ETH  ${{ states('sensor.ethereum_price') | round(0)}}
+          section_2_type: string-multiline
           section_1_title: forecast
           section_1_label: "{{ states('sensor.owm_forecast_condition') | lower }} - {{ states('sensor.owm_forecast_temperature') | round }}°"
           section_1_value: >
