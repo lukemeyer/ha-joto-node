@@ -115,6 +115,53 @@ const icons = require('@fortawesome/free-solid-svg-icons');
       case 'icon':
         joto.addFAIcon({ x: sectionX - (iconSize / 2), y: sectionY + (valueYOffset - (iconSize / 2)), size: iconSize, icon: icons[value.toString()] });
         break;
+      case 'sparkline':
+        const data = value;//[{x:0,y:1},{x:3,y:3},{x:5,y:3},{x:9,y:2},{x:10,y:5}];
+        // Sort by x
+        // Get min/max
+        let dataStats = {x:{min:Number.POSITIVE_INFINITY,max:Number.NEGATIVE_INFINITY},y:{min:Number.POSITIVE_INFINITY,max:Number.NEGATIVE_INFINITY}};
+        dataStats = data.reduce((previous,current)=>{
+          
+          const stats = previous;
+          stats.x.min = current.x < stats.x.min ? current.x : stats.x.min;
+          stats.x.max = current.x > stats.x.max ? current.x : stats.x.max;
+
+          stats.y.min = current.y < stats.y.min ? current.y : stats.y.min;
+          stats.y.max = current.y > stats.y.max ? current.y : stats.y.max;
+          return stats;
+        },dataStats);
+        dataStats.x.delta = dataStats.x.max - dataStats.x.min;
+        dataStats.y.delta = dataStats.y.max - dataStats.y.min;
+
+        //verboseLog(dataStats);
+        //const step = Math.min((colWidth / 2) / dataStats.x.delta,((rowHeight / 2) / dataStats.y.delta));
+        const xStep = (colWidth * .8) / dataStats.x.delta;
+        const yStep = 0 - ((rowHeight / 2) / dataStats.y.delta);
+
+        //verboseLog('Steps: ' + xStep + ',' + yStep);
+
+        const xOrigin = sectionX - (colWidth * .4);
+        const yOrigin = sectionY + (rowHeight / 4);
+        
+        //verboseLog('Origin: ' + xOrigin + ',' + yOrigin);
+
+        // Draw line from current -> next data point
+        //data.unshift({x:0,y:0});
+        let path = '';//'M' + xOrigin + ' ' + yOrigin;
+        for (let i = 0; i < data.length; i++ ){
+          
+          const xStart = xOrigin + (xStep * data[i].x);
+          const yStart = yOrigin + (yStep * data[i].y);
+          //verboseLog([data[i],{'x':xStart,'y':yStart}]);
+          if ( i === 0 ){
+            path += 'M ' + xStart + ',' + yStart;
+          } else {
+            path += ' L ' + xStart + ',' + yStart;
+          }
+
+        }
+        verboseLog(path);
+        joto.addPath({x:xOrigin, y:yOrigin, d: path});
       default:
         break;
     }
